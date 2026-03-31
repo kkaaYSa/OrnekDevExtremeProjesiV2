@@ -1,0 +1,307 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using DevExtreme.AspNet.Mvc.Builders
+
+@{
+    ViewBag.Title = "Ana Kayıtlar";
+}
+
+<div class="container-fluid mt-4">
+    <h2 class="mb-3">@ViewBag.Title</h2>
+
+    @(Html.DevExtreme().DataGrid()
+        .ID("gridContainer")
+        .DataSource(d => d.Mvc()
+            .Controller("Main")
+            .LoadAction("GetMainList")
+            .Key("Id")
+        )
+        .ShowBorders(true)
+        .HoverStateEnabled(true)
+        .ColumnAutoWidth(true)
+        .SearchPanel(s => s
+            .Visible(true)
+            .Placeholder("Ara...")
+        )
+        .Paging(p => p.PageSize(10))
+        .Pager(p => p
+            .ShowPageSizeSelector(true)
+            .AllowedPageSizes(new[] { 10, 20, 50 })
+            .ShowInfo(true)
+        )
+        .Columns(columns =>
+        {
+            columns.Add().DataField("Title").Caption("Başlık");
+            columns.Add().DataField("CategoryName").Caption("Kategori");
+            columns.Add().DataField("IsActive").Caption("Durum");
+        })
+        .OnInitialized("onGridInitialized")
+        .OnToolbarPreparing("onToolbarPreparing")
+        .OnContextMenuPreparing("onContextMenuPreparing")
+    )
+    @(Html.DevExtreme().Popup()
+        .ID("mainPopup")
+        .Width(600)
+        .Height("auto")
+        .ShowTitle(true)
+        .Title("Kayıt Formu")
+        .Visible(false)
+        .DragEnabled(true)
+        .HideOnOutsideClick(false)
+        .ShowCloseButton(true)
+        .ContentTemplate(new TemplateName("mainPopupTemplate"))
+        .ToolbarItems(toolbar =>
+        {
+            toolbar.Add()
+                .Widget(w => w.Button()
+                    .Text("Kaydet")
+                    .Type(ButtonType.Success)
+                    .OnClick("saveMain"))
+                .Toolbar(Toolbar.Bottom)
+                .Location(ToolbarItemLocation.After);
+
+            toolbar.Add()
+                .Widget(w => w.Button()
+                    .Text("Kapat")
+                    .OnClick("closePopup"))
+                .Toolbar(Toolbar.Bottom)
+                .Location(ToolbarItemLocation.After);
+        })
+    )
+
+    @using (Html.DevExtreme().NamedTemplate("mainPopupTemplate"))
+    {
+        @(Html.DevExtreme().Form()
+            .ID("mainForm")
+            .ColCount(1)
+            .LabelLocation(FormLabelLocation.Top)
+            .ShowColonAfterLabel(false)
+            .Items(items =>
+            {
+                items.AddSimple()
+                    .DataField("Id")
+                    .Visible(false);
+
+                items.AddSimple()
+                    .DataField("Title")
+                    .Label(l => l.Text("Başlık"))
+                    .IsRequired(true)
+                    .Editor(e => e.TextBox());
+
+                items.AddSimple()
+                    .DataField("Description")
+                    .Label(l => l.Text("Açıklama"))
+                    .IsRequired(true)
+                    .Editor(e => e.TextArea().Height(120));
+
+                items.AddSimple()
+                    .DataField("CategoryId")
+                    .Label(l => l.Text("Kategori"))
+                    .IsRequired(true)
+                    .Editor(e => e.SelectBox()
+                        .DataSource(d => d.Mvc()
+                            .Controller("Main")
+                            .LoadAction("GetCategoryList")
+                            .Key("Id")
+                        )
+                        .DisplayExpr("Name")
+                        .ValueExpr("Id")
+                        .SearchEnabled(true)
+                        .Placeholder("Kategori seçiniz")
+                    );
+
+                items.AddSimple()
+                    .DataField("IsActive")
+                    .Label(l => l.Text("Durum"))
+                    .Editor(e => e.Switch());
+            })
+            .OnInitialized("onFormInitialized")
+        )
+    }
+</div>
+
+@section scripts {
+    <script>
+        var gridInstance = null;
+        var popupInstance = null;
+        var formInstance = null;
+
+        function onGridInitialized(e) {
+            gridInstance = e.component;
+            popupInstance = $("#mainPopup").dxPopup("instance");
+        }
+
+        function onFormInitialized(e) {
+            formInstance = e.component;
+        }
+
+        function onToolbarPreparing(e) {
+            e.toolbarOptions.items.push({
+                location: "after",
+                widget: "dxButton",
+                options: {
+                    text: "Yeni Kayıt",
+                    icon: "plus",
+                    type: "success",
+                    onClick: function () {
+                        openPopup(0);
+                    }
+                }
+            });
+        }
+
+        function onContextMenuPreparing(e) {
+            if (!e.row || e.row.rowType !== "data") {
+                return;
+            }
+
+            if (!e.items) {
+                e.items = [];
+            }
+
+            e.items.push(
+                {
+                    text: "Düzenle",
+                    icon: "edit",
+                    onItemClick: function () {
+                        openPopup(e.row.data.Id);
+                    }
+                },
+                {
+                    text: "Sil",
+                    icon: "trash",
+                    onItemClick: function () {
+                        deleteMain(e.row.data.Id);
+                    }
+                }
+            );
+        }
+
+        function openPopup(id) {
+            if (!popupInstance) {
+                popupInstance = $("#mainPopup").dxPopup("instance");
+            }
+
+            if (!formInstance) {
+                formInstance = $("#mainForm").dxForm("instance");
+            }
+
+            if (id && id > 0) {
+                popupInstance.option("title", "Kayıt Düzenle");
+
+                $.ajax({
+                    url: "/Main/GetById",
+                    type: "GET",
+                    data: { id: id },
+                    success: function (res) {
+                        if (res && res.success && res.data) {
+                            formInstance.option("formData", {
+                                Id: res.data.Id,
+                                Title: res.data.Title,
+                                Description: res.data.Description,
+                                CategoryId: res.data.CategoryId,
+                                IsActive: res.data.IsActive
+                            });
+
+                            popupInstance.show();
+                            return;
+                        }
+
+                        DevExpress.ui.notify("Kayıt verisi alınamadı.", "error", 3000);
+                    },
+                    error: function () {
+                        DevExpress.ui.notify("Sunucu hatası oluştu.", "error", 3000);
+                    }
+                });
+
+                return;
+            }
+
+            popupInstance.option("title", "Yeni Kayıt");
+
+            formInstance.option("formData", {
+                Id: 0,
+                Title: "",
+                Description: "",
+                CategoryId: null,
+                IsActive: true
+            });
+
+            popupInstance.show();
+        }
+
+        function closePopup() {
+            if (!popupInstance) {
+                popupInstance = $("#mainPopup").dxPopup("instance");
+            }
+
+            popupInstance.hide();
+        }
+
+        function saveMain() {
+            if (!formInstance) {
+                formInstance = $("#mainForm").dxForm("instance");
+            }
+
+            var validationResult = formInstance.validate();
+            if (!validationResult.isValid) {
+                return;
+            }
+
+            var formData = formInstance.option("formData");
+            var url = formData.Id && formData.Id > 0
+                ? "/Main/UpdateMain"
+                : "/Main/CreateMain";
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: formData,
+                success: function (res) {
+                    if (res && res.success) {
+                        DevExpress.ui.notify(res.message || "İşlem başarılı.", "success", 3000);
+                        closePopup();
+
+                        if (gridInstance) {
+                            gridInstance.refresh();
+                        }
+
+                        return;
+                    }
+
+                    DevExpress.ui.notify((res && res.message) || "İşlem başarısız.", "error", 3000);
+                },
+                error: function () {
+                    DevExpress.ui.notify("Sunucu hatası oluştu.", "error", 3000);
+                }
+            });
+        }
+
+        function deleteMain(id) {
+            if (!confirm("Silmek istediğine emin misin?")) {
+                return;
+            }
+
+            $.ajax({
+                url: "/Main/DeleteMain",
+                type: "POST",
+                data: { id: id },
+                success: function (res) {
+                    if (res && res.success) {
+                        DevExpress.ui.notify(res.message || "Kayıt silindi.", "success", 3000);
+
+                        if (gridInstance) {
+                            gridInstance.refresh();
+                        }
+
+                        return;
+                    }
+
+                    DevExpress.ui.notify((res && res.message) || "Silme işlemi başarısız.", "error", 3000);
+                },
+                error: function () {
+                    DevExpress.ui.notify("Sunucu hatası oluştu.", "error", 3000);
+                }
+            });
+        }
+    </script>
+}

@@ -1,307 +1,149 @@
-﻿@using DevExtreme.AspNet.Mvc
-@using DevExtreme.AspNet.Mvc.Builders
+﻿@using OrnekDevExtremeProjesi2.Models.DTOs
+@using OrnekDevExtremeProjesi2.Models
+@using DevExtreme.AspNet.Mvc
 
 @{
-    ViewBag.Title = "Ana Kayıtlar";
+    ViewBag.Title = "Kayıt Yönetimi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid mt-4">
-    <h2 class="mb-3">@ViewBag.Title</h2>
+@* 1. ÖNCE JAVASCRIPT: Grid yüklenmeden önce fonksiyonlar hazır olmalı *@
+<script>
+    var MainModule = MainModule || { currentNoteMainId: 0 };
 
-    @(Html.DevExtreme().DataGrid()
-        .ID("gridContainer")
-        .DataSource(d => d.Mvc()
-            .Controller("Main")
-            .LoadAction("GetMainList")
-            .Key("Id")
-        )
-        .ShowBorders(true)
-        .HoverStateEnabled(true)
-        .ColumnAutoWidth(true)
-        .SearchPanel(s => s
-            .Visible(true)
-            .Placeholder("Ara...")
-        )
-        .Paging(p => p.PageSize(10))
-        .Pager(p => p
-            .ShowPageSizeSelector(true)
-            .AllowedPageSizes(new[] { 10, 20, 50 })
-            .ShowInfo(true)
-        )
-        .Columns(columns =>
-        {
-            columns.Add().DataField("Title").Caption("Başlık");
-            columns.Add().DataField("CategoryName").Caption("Kategori");
-            columns.Add().DataField("IsActive").Caption("Durum");
-        })
-        .OnInitialized("onGridInitialized")
-        .OnToolbarPreparing("onToolbarPreparing")
-        .OnContextMenuPreparing("onContextMenuPreparing")
-    )
-    @(Html.DevExtreme().Popup()
-        .ID("mainPopup")
-        .Width(600)
-        .Height("auto")
-        .ShowTitle(true)
-        .Title("Kayıt Formu")
-        .Visible(false)
-        .DragEnabled(true)
-        .HideOnOutsideClick(false)
-        .ShowCloseButton(true)
-        .ContentTemplate(new TemplateName("mainPopupTemplate"))
-        .ToolbarItems(toolbar =>
-        {
-            toolbar.Add()
-                .Widget(w => w.Button()
-                    .Text("Kaydet")
-                    .Type(ButtonType.Success)
-                    .OnClick("saveMain"))
-                .Toolbar(Toolbar.Bottom)
-                .Location(ToolbarItemLocation.After);
-
-            toolbar.Add()
-                .Widget(w => w.Button()
-                    .Text("Kapat")
-                    .OnClick("closePopup"))
-                .Toolbar(Toolbar.Bottom)
-                .Location(ToolbarItemLocation.After);
-        })
-    )
-
-    @using (Html.DevExtreme().NamedTemplate("mainPopupTemplate"))
-    {
-        @(Html.DevExtreme().Form()
-            .ID("mainForm")
-            .ColCount(1)
-            .LabelLocation(FormLabelLocation.Top)
-            .ShowColonAfterLabel(false)
-            .Items(items =>
-            {
-                items.AddSimple()
-                    .DataField("Id")
-                    .Visible(false);
-
-                items.AddSimple()
-                    .DataField("Title")
-                    .Label(l => l.Text("Başlık"))
-                    .IsRequired(true)
-                    .Editor(e => e.TextBox());
-
-                items.AddSimple()
-                    .DataField("Description")
-                    .Label(l => l.Text("Açıklama"))
-                    .IsRequired(true)
-                    .Editor(e => e.TextArea().Height(120));
-
-                items.AddSimple()
-                    .DataField("CategoryId")
-                    .Label(l => l.Text("Kategori"))
-                    .IsRequired(true)
-                    .Editor(e => e.SelectBox()
-                        .DataSource(d => d.Mvc()
-                            .Controller("Main")
-                            .LoadAction("GetCategoryList")
-                            .Key("Id")
-                        )
-                        .DisplayExpr("Name")
-                        .ValueExpr("Id")
-                        .SearchEnabled(true)
-                        .Placeholder("Kategori seçiniz")
-                    );
-
-                items.AddSimple()
-                    .DataField("IsActive")
-                    .Label(l => l.Text("Durum"))
-                    .Editor(e => e.Switch());
-            })
-            .OnInitialized("onFormInitialized")
-        )
-    }
-</div>
-
-@section scripts {
-    <script>
-        var gridInstance = null;
-        var popupInstance = null;
-        var formInstance = null;
-
-        function onGridInitialized(e) {
-            gridInstance = e.component;
-            popupInstance = $("#mainPopup").dxPopup("instance");
-        }
-
-        function onFormInitialized(e) {
-            formInstance = e.component;
-        }
-
-        function onToolbarPreparing(e) {
-            e.toolbarOptions.items.push({
-                location: "after",
-                widget: "dxButton",
-                options: {
-                    text: "Yeni Kayıt",
-                    icon: "plus",
-                    type: "success",
-                    onClick: function () {
-                        openPopup(0);
-                    }
-                }
-            });
-        }
-
-        function onContextMenuPreparing(e) {
-            if (!e.row || e.row.rowType !== "data") {
-                return;
-            }
-
-            if (!e.items) {
-                e.items = [];
-            }
-
+    // Sağ tık menüsünü oluşturan ana fonksiyon
+    function onMainGridContextMenu(e) {
+        if (e.row && e.row.rowType === "data") {
+            if (!e.items) e.items = [];
             e.items.push(
+                { text: "Detay Git", icon: "info", onItemClick: function () { MainModule.openDetail(e.row.data.Id); } },
+                { text: "Düzenle", icon: "edit", onItemClick: function () { e.component.editRow(e.row.rowIndex); } },
+                { text: "Notlar", icon: "comment", onItemClick: function () { MainModule.openNotes(e.row.data.Id); } },
                 {
-                    text: "Düzenle",
-                    icon: "edit",
-                    onItemClick: function () {
-                        openPopup(e.row.data.Id);
-                    }
-                },
-                {
-                    text: "Sil",
-                    icon: "trash",
-                    onItemClick: function () {
-                        deleteMain(e.row.data.Id);
+                    text: "Sil", icon: "trash", onItemClick: function () {
+                        if (confirm("Bu kaydı silmek istediğine emin misin?")) e.component.deleteRow(e.row.rowIndex);
                     }
                 }
             );
         }
+    }
 
-        function openPopup(id) {
-            if (!popupInstance) {
-                popupInstance = $("#mainPopup").dxPopup("instance");
-            }
-
-            if (!formInstance) {
-                formInstance = $("#mainForm").dxForm("instance");
-            }
-
-            if (id && id > 0) {
-                popupInstance.option("title", "Kayıt Düzenle");
-
-                $.ajax({
-                    url: "/Main/GetById",
-                    type: "GET",
-                    data: { id: id },
-                    success: function (res) {
-                        if (res && res.success && res.data) {
-                            formInstance.option("formData", {
-                                Id: res.data.Id,
-                                Title: res.data.Title,
-                                Description: res.data.Description,
-                                CategoryId: res.data.CategoryId,
-                                IsActive: res.data.IsActive
-                            });
-
-                            popupInstance.show();
-                            return;
-                        }
-
-                        DevExpress.ui.notify("Kayıt verisi alınamadı.", "error", 3000);
-                    },
-                    error: function () {
-                        DevExpress.ui.notify("Sunucu hatası oluştu.", "error", 3000);
-                    }
+    MainModule.openDetail = function (mainId) {
+        $("#recordDetailPopup").remove();
+        $("<div id='recordDetailPopup'></div>").appendTo("body");
+        $("#recordDetailPopup").dxPopup({
+            title: "Kayıt Detay Ekranı - #" + mainId,
+            width: 850, height: 650, visible: true,
+            contentTemplate: function (container) {
+                $.get("/Main/Details?id=" + mainId, function (data) {
+                    container.append(data);
+                    if (typeof DetailModule !== "undefined") DetailModule.init(mainId);
                 });
-
-                return;
             }
+        });
+    };
 
-            popupInstance.option("title", "Yeni Kayıt");
-
-            formInstance.option("formData", {
-                Id: 0,
-                Title: "",
-                Description: "",
-                CategoryId: null,
-                IsActive: true
+    MainModule.openNotes = function (mainId) {
+        this.currentNoteMainId = mainId;
+        if (window.notesPopup) window.notesPopup.show();
+        $.get("/Notes/GetByMainId", { id: mainId }, function (data) {
+            var html = "";
+            data.forEach(function (n) {
+                html += `<div style="border-bottom:1px solid #eee; padding:10px;">
+                            <b>${n.UserName}</b> <small>${n.CreatedDate}</small>
+                            <p>${n.NoteText}</p>
+                         </div>`;
             });
-
-            popupInstance.show();
-        }
-
-        function closePopup() {
-            if (!popupInstance) {
-                popupInstance = $("#mainPopup").dxPopup("instance");
-            }
-
-            popupInstance.hide();
-        }
-
-        function saveMain() {
-            if (!formInstance) {
-                formInstance = $("#mainForm").dxForm("instance");
-            }
-
-            var validationResult = formInstance.validate();
-            if (!validationResult.isValid) {
-                return;
-            }
-
-            var formData = formInstance.option("formData");
-            var url = formData.Id && formData.Id > 0
-                ? "/Main/UpdateMain"
-                : "/Main/CreateMain";
-
-            $.ajax({
-                url: url,
-                type: "POST",
-                data: formData,
-                success: function (res) {
-                    if (res && res.success) {
-                        DevExpress.ui.notify(res.message || "İşlem başarılı.", "success", 3000);
-                        closePopup();
-
-                        if (gridInstance) {
-                            gridInstance.refresh();
-                        }
-
-                        return;
-                    }
-
-                    DevExpress.ui.notify((res && res.message) || "İşlem başarısız.", "error", 3000);
-                },
-                error: function () {
-                    DevExpress.ui.notify("Sunucu hatası oluştu.", "error", 3000);
+            $("#notesList").html(html || "<p>Not bulunamadı.</p>");
+        });
+    };
+    function fixCategoryLoad(e) {
+        if (e.dataField === "CategoryId") {
+            setTimeout(function () {
+                var editor = e.editorElement.dxSelectBox("instance");
+                if (editor) {
+                    editor.getDataSource().load();
                 }
-            });
+            }, 0);
         }
+    }
+</script>
 
-        function deleteMain(id) {
-            if (!confirm("Silmek istediğine emin misin?")) {
-                return;
-            }
+<style>
+    .badge {
+        text-decoration: none !important;
+        border-bottom: none !important;
+        display: inline-block;
+        padding: 0.4em 0.6em;
+    }
+</style>
 
-            $.ajax({
-                url: "/Main/DeleteMain",
-                type: "POST",
-                data: { id: id },
-                success: function (res) {
-                    if (res && res.success) {
-                        DevExpress.ui.notify(res.message || "Kayıt silindi.", "success", 3000);
+<div class="container-fluid mt-4">
+    <div class="card-modern p-4">
+        <h3 class="mb-3" style="color: var(--accent-blue); font-weight: 600;">
+            <i class="dx-icon-home"></i> Kayıt Yönetim Paneli
+        </h3>
 
-                        if (gridInstance) {
-                            gridInstance.refresh();
-                        }
+        @(Html.DevExtreme().DataGrid<MainListDto>()
+            .ID("mainGrid")
+            .DataSource(d => d.Mvc()
+                .Controller("Main")
+                .LoadAction("GetMainList")
+                .UpdateAction("UpdateMain")
+                .DeleteAction("DeleteMain")
+                .Key("Id")
+            )
+            .ShowBorders(true)
+            .Columns(columns => {
+                columns.AddFor(m => m.Id).Width(80).Caption("ID").Visible(true);
 
-                        return;
-                    }
+                columns.AddFor(m => m.CategoryId).Caption("Kategori")
+                    .Lookup(lookup => lookup
+                        .DataSource(d => d.Mvc().Controller("Main").LoadAction("GetCategoryList").Key("Id"))
+                        .DisplayExpr("Name")
+                        .ValueExpr("Id")
+                    );
 
-                    DevExpress.ui.notify((res && res.message) || "Silme işlemi başarısız.", "error", 3000);
-                },
-                error: function () {
-                    DevExpress.ui.notify("Sunucu hatası oluştu.", "error", 3000);
-                }
-            });
-        }
-    </script>
-}
+                columns.AddFor(m => m.Title).Caption("Başlık");
+                columns.AddFor(m => m.Description).Caption("Açıklama");
+                columns.AddFor(m => m.IsActive).Caption("Durum").Width(100)
+                    .CellTemplate(@<text>
+                        <span class="badge <%= value ? "badge-success" : "badge-danger" %>"
+                              style="color: <%= value ? "#28a745" : "#dc3545" %>; font-weight: bold;">
+                            <%= value ? "Aktif" : "Pasif" %>
+                        </span>
+                    </text>);
+
+                columns.Add().Type(GridCommandColumnType.Buttons).Visible(false);
+            })
+    .OnEditorPrepared("fixCategoryLoad")
+            .Editing(e => e.Mode(GridEditMode.Popup)
+                .AllowUpdating(true)
+                .AllowAdding(true)
+                
+                .Popup(p => p.Title("Kayıt Formu").Width(500).Height(450))
+
+                .Form(f => f.Items(items => {
+                    items.AddSimpleFor(m => m.Title);
+                    items.AddSimpleFor(m => m.CategoryId)
+    .Editor(ed => ed.SelectBox()
+        .DataSource(d => d.Mvc()
+            .Controller("Main")
+            .LoadAction("GetCategoryList")
+            .Key("Id")
+
+        )
+        .DisplayExpr("Name")
+        .ValueExpr("Id")
+        .DeferRendering(false)
+        .DataSourceOptions(o => o.Paginate(false)
+        )
+    );
+                    items.AddSimpleFor(m => m.Description).Editor(ed => ed.TextArea().Height(80));
+                    items.AddSimpleFor(m => m.IsActive).Editor(ed => ed.Switch());
+                }))
+            )
+            .OnContextMenuPreparing("onMainGridContextMenu")
+        )
+    </div>
+</div>

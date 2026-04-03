@@ -264,12 +264,6 @@
     <Content Include="Scripts\localization\dx.messages.vi.js" />
     <Content Include="Scripts\localization\dx.messages.zh-tw.js" />
     <Content Include="Scripts\localization\dx.messages.zh.js" />
-    <Content Include="Scripts\main\main-api.js" />
-    <Content Include="Scripts\main\main-datagrid.js" />
-    <Content Include="Scripts\main\main-form.js" />
-    <Content Include="Scripts\main\main-grid.js" />
-    <Content Include="Scripts\main\main-init.js" />
-    <Content Include="Scripts\main\main-popup.js" />
     <Content Include="Scripts\vectormap-data\africa.js" />
     <Content Include="Scripts\vectormap-data\canada.js" />
     <Content Include="Scripts\vectormap-data\eurasia.js" />
@@ -346,7 +340,8 @@
   <ItemGroup>
     <Content Include="Web.config" />
     <Content Include="Views\Main\Index.cshtml" />
-    <Content Include="Views\Main\Partials\_MainPopup.cshtml" />
+    <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Views\Account\Register.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

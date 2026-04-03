@@ -1,0 +1,70 @@
+﻿@using DevExtreme.AspNet.Mvc;
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Kayıt Ol</title>
+
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/account/account.css" rel="stylesheet" />
+</head>
+<body class="auth-page">
+
+    <div class="auth-box">
+
+        <h3 style="text-align:center; margin-bottom:30px;">
+            Kullanıcı Kaydı
+        </h3>
+
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+        {
+            @(Html.DevExtreme().TextBox()
+                .Name("UserName")
+                .Placeholder("Kullanıcı Adı")
+                .StylingMode(EditorStylingMode.Outlined)
+                .Width("100%")
+            )
+
+            <br />
+
+            @(Html.DevExtreme().TextBox()
+                .Name("Email")
+                .Placeholder("Email")
+                .StylingMode(EditorStylingMode.Outlined)
+                .Width("100%")
+            )
+
+            <br />
+
+            @(Html.DevExtreme().TextBox()
+                .Name("Password")
+                .Mode(TextBoxMode.Password)
+                .Placeholder("Şifre")
+                .StylingMode(EditorStylingMode.Outlined)
+                .Width("100%")
+            )
+
+            <br />
+
+            @(Html.DevExtreme().Button()
+                .Text("Kayıt Ol")
+                .Type(ButtonType.Success)
+                .UseSubmitBehavior(true)
+                .Width("100%")
+            )
+        }
+
+        <br />
+
+        <div style="text-align:center">
+            <a href="@Url.Action("Login", "Account")">Giriş Yap</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

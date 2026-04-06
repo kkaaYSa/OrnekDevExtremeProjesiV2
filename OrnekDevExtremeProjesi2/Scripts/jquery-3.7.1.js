@@ -9937,6 +9937,7 @@ jQuery.ajaxTransport( function( options ) {
 				try {
 
 					// Do send the request (this may raise an exception)
+					console.log("Gönderilen Veri:", options.data); // Eðer burada 'null' veya '{}' görüyorsan veri boþtur.
 					xhr.send( options.hasContent && options.data || null );
 				} catch ( e ) {
 

@@ -98,23 +98,27 @@ namespace OrnekDevExtremeProjesi2.Controllers
             }
         }
 
-        [HttpPost]
-        public JsonResult UpdateMain(Main main)
+        [HttpPost] // Veya [HttpPut] ama Grid'dekiyle aynı olmalı
+        public JsonResult UpdateMain(int key, string values)
         {
             try
             {
+                var dbKayit = _mainService.GetById(key);
+                if (dbKayit == null) return Json(new { success = false, message = "Kayıt bulunamadı." });
+
+                // values içindeki json'u (örneğin sadece IsActive gelmiş) mevcut kayda yedir
+                Newtonsoft.Json.JsonConvert.PopulateObject(values, dbKayit);
+
                 int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;
+                _mainService.UpdateMain(dbKayit, currentUserId);
 
-                _mainService.UpdateMain(main, currentUserId);
-
-                return Json(new { success = true, message = "Kayıt Başarıyla Güncellendi" });
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Hata: " + ex.Message });
+                return Json(new { success = false, message = ex.Message });
             }
         }
-
         [HttpGet]
         public JsonResult GetById(int id)
         {

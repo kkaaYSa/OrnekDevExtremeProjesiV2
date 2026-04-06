@@ -1,75 +1,149 @@
 ﻿@using OrnekDevExtremeProjesi2.Models.DTOs
+
 @using OrnekDevExtremeProjesi2.Models
+
 @using DevExtreme.AspNet.Mvc
 
+
+
 @{
+
     ViewBag.Title = "Kayıt Yönetimi";
+
     Layout = "~/Views/Shared/_Layout.cshtml";
+
 }
 
+
+
 @* 1. ÖNCE JAVASCRIPT: Grid yüklenmeden önce fonksiyonlar hazır olmalı *@
+
 <script>
+
     var MainModule = MainModule || { currentNoteMainId: 0 };
 
+
+
     // Sağ tık menüsünü oluşturan ana fonksiyon
+
     function onMainGridContextMenu(e) {
+
         if (e.row && e.row.rowType === "data") {
+
             if (!e.items) e.items = [];
+
             e.items.push(
+
                 { text: "Detay Git", icon: "info", onItemClick: function () { MainModule.openDetail(e.row.data.Id); } },
+
                 { text: "Düzenle", icon: "edit", onItemClick: function () { e.component.editRow(e.row.rowIndex); } },
+
                 { text: "Notlar", icon: "comment", onItemClick: function () { MainModule.openNotes(e.row.data.Id); } },
+
                 {
+
                     text: "Sil", icon: "trash", onItemClick: function () {
+
                         if (confirm("Bu kaydı silmek istediğine emin misin?")) e.component.deleteRow(e.row.rowIndex);
+
                     }
+
                 }
+
             );
+
         }
+
     }
+
+
 
     MainModule.openDetail = function (mainId) {
+
         $("#recordDetailPopup").remove();
+
         $("<div id='recordDetailPopup'></div>").appendTo("body");
+
         $("#recordDetailPopup").dxPopup({
+
             title: "Kayıt Detay Ekranı - #" + mainId,
+
             width: 850, height: 650, visible: true,
+
             contentTemplate: function (container) {
+
                 $.get("/Main/Details?id=" + mainId, function (data) {
+
                     container.append(data);
+
                     if (typeof DetailModule !== "undefined") DetailModule.init(mainId);
+
                 });
+
             }
+
         });
+
     };
+
+
 
     MainModule.openNotes = function (mainId) {
+
         this.currentNoteMainId = mainId;
+
         if (window.notesPopup) window.notesPopup.show();
+
         $.get("/Notes/GetByMainId", { id: mainId }, function (data) {
+
             var html = "";
+
             data.forEach(function (n) {
+
                 html += `<div style="border-bottom:1px solid #eee; padding:10px;">
+
                             <b>${n.UserName}</b> <small>${n.CreatedDate}</small>
+
                             <p>${n.NoteText}</p>
+
                          </div>`;
+
             });
+
             $("#notesList").html(html || "<p>Not bulunamadı.</p>");
+
         });
+
     };
-    function fixCategoryLoad(e) {
-        if (e.dataField === "CategoryId") {
-            setTimeout(function () {
-                var editor = e.editorElement.dxSelectBox("instance");
-                if (editor) {
-                    editor.getDataSource().load();
-                }
-            }, 0);
-        }
+
+
+
+    function categoryEditorInitialized(e) {
+
+        var editor = e.component;
+
+        var currentValue = editor.option("value");
+
+
+
+        editor.getDataSource().load().done(function () {
+
+            editor.option("value", currentValue);
+
+        });
+
     }
+
+
+
+
+
 </script>
 
+
+
 <style>
+
     .badge {
         text-decoration: none !important;
         border-bottom: none !important;
@@ -78,72 +152,154 @@
     }
 </style>
 
+
+
 <div class="container-fluid mt-4">
+
     <div class="card-modern p-4">
+
         <h3 class="mb-3" style="color: var(--accent-blue); font-weight: 600;">
+
             <i class="dx-icon-home"></i> Kayıt Yönetim Paneli
+
         </h3>
 
+
+
         @(Html.DevExtreme().DataGrid<MainListDto>()
+
             .ID("mainGrid")
+
             .DataSource(d => d.Mvc()
+
                 .Controller("Main")
+
                 .LoadAction("GetMainList")
+
+                .InsertAction("CreateMain")
+
                 .UpdateAction("UpdateMain")
+
                 .DeleteAction("DeleteMain")
+
                 .Key("Id")
+
             )
+
             .ShowBorders(true)
+
             .Columns(columns => {
+
                 columns.AddFor(m => m.Id).Width(80).Caption("ID").Visible(true);
 
+
+
                 columns.AddFor(m => m.CategoryId).Caption("Kategori")
+
                     .Lookup(lookup => lookup
+
                         .DataSource(d => d.Mvc().Controller("Main").LoadAction("GetCategoryList").Key("Id"))
+
                         .DisplayExpr("Name")
+
                         .ValueExpr("Id")
+
                     );
 
+
+
                 columns.AddFor(m => m.Title).Caption("Başlık");
+
                 columns.AddFor(m => m.Description).Caption("Açıklama");
+
                 columns.AddFor(m => m.IsActive).Caption("Durum").Width(100)
+
                     .CellTemplate(@<text>
+
                         <span class="badge <%= value ? "badge-success" : "badge-danger" %>"
+
                               style="color: <%= value ? "#28a745" : "#dc3545" %>; font-weight: bold;">
+
                             <%= value ? "Aktif" : "Pasif" %>
+
                         </span>
+
                     </text>);
 
+
+
                 columns.Add().Type(GridCommandColumnType.Buttons).Visible(false);
+
             })
-    .OnEditorPrepared("fixCategoryLoad")
+
+
+
             .Editing(e => e.Mode(GridEditMode.Popup)
+
                 .AllowUpdating(true)
+
                 .AllowAdding(true)
-                
+
+
+
                 .Popup(p => p.Title("Kayıt Formu").Width(500).Height(450))
 
-                .Form(f => f.Items(items => {
-                    items.AddSimpleFor(m => m.Title);
-                    items.AddSimpleFor(m => m.CategoryId)
+
+
+               .Form(f => f.Items(items =>
+
+               {
+
+                   items.AddSimpleFor(m => m.Title);
+
+
+
+                   items.AddSimpleFor(m => m.CategoryId)
+
+    .Label(l => l.Text("Kategori"))
+
     .Editor(ed => ed.SelectBox()
+
         .DataSource(d => d.Mvc()
+
             .Controller("Main")
+
             .LoadAction("GetCategoryList")
+
             .Key("Id")
 
         )
+
         .DisplayExpr("Name")
+
         .ValueExpr("Id")
-        .DeferRendering(false)
-        .DataSourceOptions(o => o.Paginate(false)
-        )
+
+        .SearchEnabled(true)
+
+        .OnInitialized("categoryEditorInitialized")
+
     );
-                    items.AddSimpleFor(m => m.Description).Editor(ed => ed.TextArea().Height(80));
-                    items.AddSimpleFor(m => m.IsActive).Editor(ed => ed.Switch());
-                }))
+
+
+
+                   items.AddSimpleFor(m => m.Description)
+
+                       .Editor(ed => ed.TextArea().Height(80));
+
+
+
+                   items.AddSimpleFor(m => m.IsActive)
+
+                       .Editor(ed => ed.Switch());
+
+               }))
+
             )
+
             .OnContextMenuPreparing("onMainGridContextMenu")
+
         )
+
     </div>
+
 </div>

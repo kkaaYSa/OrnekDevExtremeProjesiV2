@@ -1,3 +1,9 @@
+﻿@using OrnekDevExtremeProjesi2.Models.DTOs
+
+@using OrnekDevExtremeProjesi2.Models
+
+@using DevExtreme.AspNet.Mvc
+@using System.Web.Helpers
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,31 +20,137 @@
     @Styles.Render("~/Content/DevExtremeBundle")
     @Scripts.Render("~/Scripts/bundle")
     @Scripts.Render("~/Scripts/DevExtremeBundle")
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            background: #f5f7fb;
+            overflow: hidden;
+        }
+
+        .layout-shell {
+            height: 100vh;
+        }
+
+        .layout-menu {
+            height: 100%;
+            background: #172133;
+            color: #fff;
+            padding-top: 12px;
+        }
+
+        .layout-brand {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 16px 20px 24px 20px;
+            color: #fff;
+        }
+
+        .layout-content {
+            padding: 24px;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        .dx-treeview-node {
+            color: #fff;
+        }
+
+        .dx-treeview-toggle-item-visibility {
+            color: #fff;
+        }
+    </style>
 </head>
+<body>
+    @{
+        var menuItems = new[]
+        {
+            new { id = 1, text = "Ana Sayfa", icon = "home", url = Url.Action("Index", "Main") },
 
-<body style="padding-top: 5rem;">
+            Session["UserId"] != null
+                ? new { id = 2, text = "Profil", icon = "user", url = Url.Action("Profile", "Profile") }
+                : new { id = 2, text = "Giriş Yap", icon = "login", url = Url.Action("Login", "Account") },
 
-    <nav class="navbar navbar-dark bg-dark fixed-top navbar-expand-md">
-        <a class="navbar-brand" href="/">OrnekDevExtremeProjesi2</a>
+            Session["UserId"] != null
+                ? new { id = 3, text = "Çıkış Yap", icon = "runner", url = Url.Action("Logout", "Account") }
+                : new { id = 3, text = "Kayıt Ol", icon = "plus", url = Url.Action("Register", "Account") }
+        };
+    }
 
-        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    @(Html.DevExtreme().Drawer()
+        .ID("appDrawer")
+        .Opened(true)
+        .OpenedStateMode(DrawerOpenedStateMode.Shrink)
+        .RevealMode(DrawerRevealMode.Expand)
+        .MinSize(220)
+        .MaxSize(220)
+        .Shading(false)
+        .ElementAttr("class", "layout-shell")
+        .Template(@<text>
+            <div class="layout-menu">
+                <div class="layout-brand">Mini Kayıt Sistemi</div>
 
-        <div id="navbar" class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-                <li class="active nav-item"><a href="#" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
-                <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
+                @(Html.DevExtreme().TreeView()
+    .ID("sideMenuTree")
+    .Items(items =>
+    {
+        items.Add()
+            .Text("Ana Sayfa")
+            .Icon("home")
+            .Option("url", Url.Action("Index", "Main"));
 
-    <main role="main" class="container">
-        @RenderBody()
-    </main>
+        if (Session["UserId"] != null)
+        {
+            items.Add()
+                .Text("Profil")
+                .Icon("user")
+                .Option("url", Url.Action("Profile", "Profile"));
+
+            items.Add()
+                .Text("Çıkış Yap")
+                .Icon("runner")
+                .Option("url", Url.Action("Logout", "Account"));
+        }
+        else
+        {
+            items.Add()
+                .Text("Giriş Yap")
+                .Icon("login")
+                .Option("url", Url.Action("Login", "Account"));
+
+            items.Add()
+                .Text("Kayıt Ol")
+                .Icon("plus")
+                .Option("url", Url.Action("Register", "Account"));
+        }
+    })
+    .SelectionMode(NavSelectionMode.Single)
+    .FocusStateEnabled(false)
+    .ExpandEvent(TreeViewExpandEvent.Click)
+    .OnItemClick("onSideMenuItemClick")
+)
+            </div>
+        </text>)
+        .Content(@<text>
+            <div class="layout-content">
+                @RenderBody()
+            </div>
+        </text>)
+    )
+
+    <script>
+        function onSideMenuItemClick(e) {
+            var url = e.itemData.url;
+            if (url) {
+                window.location.href = url;
+            }
+        }
+    </script>
 
     @RenderSection("scripts", required: false)
-    
 </body>
 </html>

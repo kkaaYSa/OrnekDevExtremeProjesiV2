@@ -1,70 +1,104 @@
-﻿@using DevExtreme.AspNet.Mvc;
+﻿@using DevExtreme.AspNet.Mvc
+@model OrnekDevExtremeProjesi2.Models.Users
+
+
 @{
-    Layout = null;
+    ViewBag.Title = "Kayıt Ol";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>Kayıt Ol</title>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card-modern p-4">
 
-    <link href="~/Content/bootstrap.css" rel="stylesheet" />
-    <link href="~/Content/account/account.css" rel="stylesheet" />
-</head>
-<body class="auth-page">
+                <h3 class="mb-4" style="color: var(--accent-blue); font-weight:600;">
+                    <i class="dx-icon-user"></i> Kayıt Ol
+                </h3>
 
-    <div class="auth-box">
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger mb-3">
+                        @ViewBag.Error
+                    </div>
+                }
 
-        <h3 style="text-align:center; margin-bottom:30px;">
-            Kullanıcı Kaydı
-        </h3>
+                @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+                {
+                    @(Html.DevExtreme().Form()
+                        .ID("registerForm")
+                        .ColCount(1)
+                        .LabelLocation(FormLabelLocation.Top)
+                        .Items(items =>
+                        {
+                            items.AddSimple()
+                                .Label(l => l.Text("Kullanıcı Adı"))
+                                .Template(@<text>
+                                    @(Html.DevExtreme().TextBox()
+                                        .Name("UserName")
+                                        .ID("registerUserName")
+                                        .Placeholder("Kullanıcı adı girin")
+                                        .ShowClearButton(true)
+                                    )
+                                </text>);
 
-        @using (Html.BeginForm("Register", "Account", FormMethod.Post))
-        {
-            @(Html.DevExtreme().TextBox()
-                .Name("UserName")
-                .Placeholder("Kullanıcı Adı")
-                .StylingMode(EditorStylingMode.Outlined)
-                .Width("100%")
-            )
+                            items.AddSimple()
+                                .Label(l => l.Text("E-Posta"))
+                                .Template(@<text>
+                                    @(Html.DevExtreme().TextBox()
+                                        .Name("Email")
+                                        .ID("registerEmail")
+                                        .Placeholder("E-posta girin")
+                                        .ShowClearButton(true)
+                                    )
+                                </text>);
 
-            <br />
+                            items.AddSimple()
+                                .Label(l => l.Text("Şifre"))
+                                .Template(@<text>
+                                    @(Html.DevExtreme().TextBox()
+                                        .Name("Password")
+                                        .ID("registerPassword")
+                                        .Mode(TextBoxMode.Password)
+                                        .Placeholder("Şifre girin")
+                                        .Buttons(buttons =>
+                                        {
+                                            buttons.Add()
+                                                .Name("password")
+                                                .Location(TextEditorButtonLocation.After)
+                                                .Widget(w => w.Button()
+                                                    .Icon("eyeopen")
+                                                    .OnClick("toggleRegisterPassword"));
+                                        })
+                                    )
+                                </text>);
+                        })
+                    )
 
-            @(Html.DevExtreme().TextBox()
-                .Name("Email")
-                .Placeholder("Email")
-                .StylingMode(EditorStylingMode.Outlined)
-                .Width("100%")
-            )
+                    <div class="mt-4">
+                        @(Html.DevExtreme().Button()
+                            .ID("registerBtn")
+                            .Text("Kayıt Ol")
+                            .Type(ButtonType.Success)
+                            .StylingMode(ButtonStylingMode.Contained)
+                            .UseSubmitBehavior(true)
+                            .Width("100%")
+                        )
+                    </div>
+                }
 
-            <br />
-
-            @(Html.DevExtreme().TextBox()
-                .Name("Password")
-                .Mode(TextBoxMode.Password)
-                .Placeholder("Şifre")
-                .StylingMode(EditorStylingMode.Outlined)
-                .Width("100%")
-            )
-
-            <br />
-
-            @(Html.DevExtreme().Button()
-                .Text("Kayıt Ol")
-                .Type(ButtonType.Success)
-                .UseSubmitBehavior(true)
-                .Width("100%")
-            )
-        }
-
-        <br />
-
-        <div style="text-align:center">
-            <a href="@Url.Action("Login", "Account")">Giriş Yap</a>
+                <div class="mt-3 text-center">
+                    <a href="@Url.Action("Login","Account")">Zaten hesabın var mı? Giriş yap</a>
+                </div>
+            </div>
         </div>
-
     </div>
+</div>
 
-</body>
-</html>
+<script>
+    function toggleRegisterPassword() {
+        var editor = $("#registerPassword").dxTextBox("instance");
+        var currentMode = editor.option("mode");
+        editor.option("mode", currentMode === "password" ? "text" : "password");kafaka
+    }
+</script>

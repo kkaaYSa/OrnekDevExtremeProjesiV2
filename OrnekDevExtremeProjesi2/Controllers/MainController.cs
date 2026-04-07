@@ -30,6 +30,25 @@ namespace OrnekDevExtremeProjesi2.Controllers
             return View();
         }
 
+        public ActionResult TestLogin()
+        {
+            Session["UserId"] = 1;
+            Session["UserName"] = "Volkan";
+            Session["Role"] = "Admin";
+
+            return RedirectToAction("Index");
+        }
+
+        public JsonResult DebugSession()
+        {
+            return Json(new
+            {
+                userId = Session["UserId"],
+                userName = Session["UserName"],
+                role = Session["Role"]
+            }, JsonRequestBehavior.AllowGet);
+        }
+
         [HttpGet]
         //[ValidateAntiForgeryToken]
         public ActionResult GetMainList()
@@ -54,36 +73,53 @@ namespace OrnekDevExtremeProjesi2.Controllers
             }
         }
         [HttpPost]
-        public JsonResult CreateMain(Main main)
+        public JsonResult CreateMain(string values)
         {
-            if (string.IsNullOrEmpty(main.Title))
-            {
-                return Json(new { success = false, message = "Başlık alanı boş bırakılamaz!" });
-            }
-
             try
             {
-                int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;
+                if (string.IsNullOrWhiteSpace(values))
+                    return Json(new { success = false, message = "values boş geliyor." });
 
+                var json = Newtonsoft.Json.Linq.JObject.Parse(values);
+                var main = new Main();
+
+                if (json["Title"] != null)
+                    main.Title = json["Title"].ToString();
+
+                if (json["Description"] != null)
+                    main.Description = json["Description"].ToString();
+
+                if (json["CategoryId"] != null && !string.IsNullOrWhiteSpace(json["CategoryId"].ToString()))
+                    main.CategoryId = json["CategoryId"].ToObject<int>();
+
+                if (json["IsActive"] != null)
+                    main.IsActive = json["IsActive"].ToObject<bool>();
+                else
+                    main.IsActive = true;
+
+                if (string.IsNullOrWhiteSpace(main.Title))
+                    return Json(new { success = false, message = "Başlık alanı boş bırakılamaz!" });
+
+                int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;
                 _mainService.CreateMain(main, currentUserId);
 
-                return Json(new { success = true, message = "Kayıt Başarıyla Eklendi." });
+                return Json(new { success = true, message = "Kayıt başarıyla eklendi." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Veritabanı hatası oluştu.", error = ex.Message });
+                return Json(new { success = false, message = ex.Message, values = values });
             }
         }
-        [HttpPost]
-        public JsonResult DeleteMain(int id)
+        [AcceptVerbs(HttpVerbs.Post | HttpVerbs.Delete)]
+        public JsonResult DeleteMain(int key)
         {
             try
             {
-                int currentUserId = (int)Session["UserId"];
-                string currentUserName = Session["UserName"].ToString();
-                string role = Session["Role"].ToString();
+                int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;
+                string currentUserName = Session["UserName"]?.ToString() ?? "Volkan";
+                string role = Session["Role"]?.ToString() ?? "Admin";
 
-                var result = _mainService.DeleteMain(id, currentUserId, currentUserName, role);
+                var result = _mainService.DeleteMain(key, currentUserId, currentUserName, role);
 
                 if (!result)
                     return Json(new { success = false, message = "Kayıt bulunamadı!" });

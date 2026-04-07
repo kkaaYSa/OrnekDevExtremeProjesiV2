@@ -124,6 +124,12 @@
 
         var currentValue = editor.option("value");
 
+        if (typeof currentValue === "string" && currentValue.trim() !== "") {
+            var parsedValue = Number(currentValue);
+            if (!isNaN(parsedValue)) {
+                currentValue = parsedValue;
+            }
+        }
 
 
         editor.getDataSource().load().done(function () {
@@ -132,6 +138,15 @@
 
         });
 
+    }
+
+    function categoryEditorValueChanged(e) {
+        if (typeof e.value === "string" && e.value.trim() !== "") {
+            var parsedValue = Number(e.value);
+            if (!isNaN(parsedValue) && parsedValue !== e.value) {
+                e.component.option("value", parsedValue);
+            }
+        }
     }
 
 
@@ -277,6 +292,7 @@
         .SearchEnabled(true)
 
         .OnInitialized("categoryEditorInitialized")
+        .OnValueChanged("categoryEditorValueChanged")
 
     );
 

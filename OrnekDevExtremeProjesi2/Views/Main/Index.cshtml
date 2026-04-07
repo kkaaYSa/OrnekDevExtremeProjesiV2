@@ -3,6 +3,7 @@
 @using OrnekDevExtremeProjesi2.Models
 
 @using DevExtreme.AspNet.Mvc
+@using System.Web.Helpers
 
 
 
@@ -21,8 +22,7 @@
 <script>
 
     var MainModule = MainModule || { currentNoteMainId: 0 };
-
-
+    var categoryList = @Html.Raw(Json.Encode(ViewBag.Categories));
 
     // Sağ tık menüsünü oluşturan ana fonksiyon
 
@@ -118,21 +118,7 @@
 
 
 
-    function categoryEditorInitialized(e) {
 
-        var editor = e.component;
-
-        var currentValue = editor.option("value");
-
-
-
-        editor.getDataSource().load().done(function () {
-
-            editor.option("value", currentValue);
-
-        });
-
-    }
 
 
 
@@ -195,16 +181,11 @@
 
 
                 columns.AddFor(m => m.CategoryId).Caption("Kategori")
-
-                    .Lookup(lookup => lookup
-
-                        .DataSource(d => d.Mvc().Controller("Main").LoadAction("GetCategoryList").Key("Id"))
-
-                        .DisplayExpr("Name")
-
-                        .ValueExpr("Id")
-
-                    );
+    .Lookup(lookup => lookup
+        .DataSource(new JS("categoryList"))
+        .DisplayExpr("Name")
+        .ValueExpr("Id")
+    );
 
 
 
@@ -255,32 +236,7 @@
 
 
                    items.AddSimpleFor(m => m.CategoryId)
-
-    .Label(l => l.Text("Kategori"))
-
-    .Editor(ed => ed.SelectBox()
-
-        .DataSource(d => d.Mvc()
-
-            .Controller("Main")
-
-            .LoadAction("GetCategoryList")
-
-            .Key("Id")
-
-        )
-
-        .DisplayExpr("Name")
-
-        .ValueExpr("Id")
-
-        .SearchEnabled(true)
-
-        .OnInitialized("categoryEditorInitialized")
-
-    );
-
-
+     .Label(l => l.Text("Kategori"));
 
                    items.AddSimpleFor(m => m.Description)
 

@@ -26,6 +26,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
 
         public ActionResult Index()
         {
+            ViewBag.Categories = _categoryService.GetAllCategories();
             return View();
         }
 
@@ -98,25 +99,46 @@ namespace OrnekDevExtremeProjesi2.Controllers
             }
         }
 
-        [HttpPost] // Veya [HttpPut] ama Grid'dekiyle aynı olmalı
+        [HttpPut]
         public JsonResult UpdateMain(int key, string values)
         {
             try
             {
-                var dbKayit = _mainService.GetById(key);
-                if (dbKayit == null) return Json(new { success = false, message = "Kayıt bulunamadı." });
+                if (string.IsNullOrWhiteSpace(values))
+                    return Json(new { success = false, message = "values boş geliyor." });
 
-                // values içindeki json'u (örneğin sadece IsActive gelmiş) mevcut kayda yedir
-                Newtonsoft.Json.JsonConvert.PopulateObject(values, dbKayit);
+                var dbKayit = _mainService.GetById(key);
+                if (dbKayit == null)
+                    return Json(new { success = false, message = "Kayıt bulunamadı." });
+
+                Newtonsoft.Json.Linq.JObject json = Newtonsoft.Json.Linq.JObject.Parse(values);
+
+                if (json["Title"] != null)
+                    dbKayit.Title = json["Title"].ToString();
+
+                if (json["Description"] != null)
+                    dbKayit.Description = json["Description"].ToString();
+
+                if (json["IsActive"] != null)
+                    dbKayit.IsActive = json["IsActive"].ToObject<bool>();
+
+                if (json["CategoryId"] != null && !string.IsNullOrWhiteSpace(json["CategoryId"].ToString()))
+                    dbKayit.CategoryId = json["CategoryId"].ToObject<int>();
 
                 int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;
                 _mainService.UpdateMain(dbKayit, currentUserId);
 
-                return Json(new { success = true });
+                return Json(new { success = true, values = values });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    key = key,
+                    values = values
+                });
             }
         }
         [HttpGet]

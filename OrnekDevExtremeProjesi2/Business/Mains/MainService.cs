@@ -70,7 +70,7 @@ namespace OrnekDevExtremeProjesi2.Business.Mains
                 currentUserId
             );
         }
-        public void UpdateMain(OrnekDevExtremeProjesi2.Models.Main main, int currentUserId)
+        public void UpdateMain(Main main, int currentUserId)
         {
             var dbKayit = _mainRepository.GetById(main.Id);
             if (dbKayit == null)

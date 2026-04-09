@@ -13,6 +13,7 @@ namespace OrnekDevExtremeProjesi2.Models.DTOs
         public bool IsActive { get; set; }
 
         public int NoteCount { get; set; }
+        public string AdminNote { get; set; }
 
         public int? LastApprovalUserId { get; set; }
         public string LastApprovalStatus { get; set; }

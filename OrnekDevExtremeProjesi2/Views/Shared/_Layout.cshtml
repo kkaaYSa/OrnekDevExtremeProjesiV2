@@ -66,20 +66,7 @@
     </style>
 </head>
 <body>
-    @{
-        var menuItems = new[]
-        {
-            new { id = 1, text = "Ana Sayfa", icon = "home", url = Url.Action("Index", "Main") },
-
-            Session["UserId"] != null
-                ? new { id = 2, text = "Profil", icon = "user", url = Url.Action("Profile", "Profile") }
-                : new { id = 2, text = "Giriş Yap", icon = "login", url = Url.Action("Login", "Account") },
-
-            Session["UserId"] != null
-                ? new { id = 3, text = "Çıkış Yap", icon = "runner", url = Url.Action("Logout", "Account") }
-                : new { id = 3, text = "Kayıt Ol", icon = "plus", url = Url.Action("Register", "Account") }
-        };
-    }
+    
 
     @(Html.DevExtreme().Drawer()
         .ID("appDrawer")
@@ -98,13 +85,28 @@
     .ID("sideMenuTree")
     .Items(items =>
     {
-        items.Add()
-            .Text("Ana Sayfa")
-            .Icon("home")
-            .Option("url", Url.Action("Index", "Main"));
+
+
 
         if (Session["UserId"] != null)
         {
+            items.Add()
+                .Text("Ana Sayfa")
+                .Icon("home")
+                .Option("url", Url.Action("Index", "Main"));
+
+            if ((Session["Role"] != null ? Session["Role"].ToString() : "") == "Admin")
+            {
+                items.Add()
+                    .Text("Onay Talepleri")
+                    .Icon("todo")
+                    .Option("url", Url.Action("Approvals", "Approval"));
+                items.Add()
+    .Text("Sistem Logları")
+    .Icon("event")
+    .Option("url", Url.Action("Index", "Logs"));
+            }
+
             items.Add()
                 .Text("Profil")
                 .Icon("user")
@@ -143,12 +145,14 @@
     )
 
     <script>
+
         function onSideMenuItemClick(e) {
             var url = e.itemData.url;
             if (url) {
                 window.location.href = url;
             }
         }
+
     </script>
 
     @RenderSection("scripts", required: false)

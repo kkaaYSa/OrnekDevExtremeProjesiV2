@@ -29,14 +29,15 @@ namespace OrnekDevExtremeProjesi2.DataAccess.Mains
                 .ToList();
 
             var approvals = _db.ApprovalProcess
-                .Select(a => new
-                {
-                    a.MainId,
-                    a.UsersId,
-                    a.Status,
-                    a.RequestDate
-                })
-                .ToList();
+    .Select(a => new
+    {
+        a.MainId,
+        a.UsersId,
+        a.Status,
+        a.RequestDate,
+        a.AdminNote
+    })
+    .ToList();
 
             var noteCounts = _db.notes
                 .GroupBy(n => n.MainId)
@@ -76,6 +77,7 @@ namespace OrnekDevExtremeProjesi2.DataAccess.Mains
                     CreatedDate = m.CreatedDate,
                     IsActive = m.IsActive,
                     NoteCount = noteCount,
+                    AdminNote = lastApproval != null ? lastApproval.AdminNote : null,
                     LastApprovalUserId = lastApproval != null ? (int?)lastApproval.UsersId : null,
                     LastApprovalStatus = lastApproval != null ? lastApproval.Status : null,
                     LastApprovalDate = lastApproval != null ? (System.DateTime?)lastApproval.RequestDate : null,

@@ -204,22 +204,21 @@ namespace OrnekDevExtremeProjesi2.Controllers
             var data = _mainService.GetById(id);
             if (data == null) return HttpNotFound();
 
-            ViewBag.Id = id;
+            var categories = _categoryService.GetAllCategories();
+            var category = categories.FirstOrDefault(x => x.Id == data.CategoryId);
+            ViewBag.CategoryName = category != null ? category.Name : "";
+
             return PartialView("~/Views/Shared/Detail.cshtml", data);
         }
 
         [HttpGet]
-        public JsonResult GetLogsByMainId(int id)
+        public ContentResult GetLogsByMainId(int id)
         {
-            try
-            {
-                var logs = _activityLogService.GetLogsByMainId(id);
-                return Json(logs, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = ex.Message }, JsonRequestBehavior.AllowGet);
-            }
+            var logs = _activityLogService.GetLogsByMainId(id);
+            return Content(
+                Newtonsoft.Json.JsonConvert.SerializeObject(logs),
+                "application/json"
+            );
         }
         [HttpGet]
         public JsonResult GetRejectedNotifications()
@@ -230,15 +229,20 @@ namespace OrnekDevExtremeProjesi2.Controllers
                 string currentRole = Session["Role"] != null ? Session["Role"].ToString() : "";
 
                 var data = _mainService
-                    .GetMainList(currentUserId, currentRole)
-                    .Where(x => x.DeleteStatus == "Reddedildi")
-                    .Select(x => new
-                    {
-                        x.Id
-                    })
-                    .ToList();
+    .GetMainList(currentUserId, currentRole)
+    .Where(x => x.DeleteStatus == "Reddedildi")
+    .Select(x => new
+    {
+        x.Id,
+        x.Title,
+        x.AdminNote,
+        x.LastApprovalDate
+    })
+    .ToList();
 
                 return Json(new { success = true, data = data }, JsonRequestBehavior.AllowGet);
+
+                
             }
             catch (Exception ex)
             {
@@ -250,7 +254,16 @@ namespace OrnekDevExtremeProjesi2.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            if (Session["UserId"] == null)
+            {
+                filterContext.Result = RedirectToAction("Login", "Account");
+                return;
+            }
 
+            base.OnActionExecuting(filterContext);
+        }   
 
 
 

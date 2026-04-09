@@ -63,7 +63,7 @@ namespace OrnekDevExtremeProjesi2.Business.Notes
             _notesRepository.Add(note);
             _notesRepository.Save();
 
-            _activityLogService.AddLog(mainId, "Note", "Add", userId);
+            _activityLogService.AddLog(note.MainId, "Note", "Delete", userId);
 
             return new NoteActionResultDto
             {
@@ -94,12 +94,12 @@ namespace OrnekDevExtremeProjesi2.Business.Notes
                 };
             }
 
-            var deletedText = note.NoteText;
+            var mainId = note.MainId;
 
             _notesRepository.Delete(note);
             _notesRepository.Save();
 
-            _activityLogService.AddLog(noteId, "Note", "Delete", userId);
+            _activityLogService.AddLog(mainId, "Note", "Delete", userId);
 
             return new NoteActionResultDto
             {

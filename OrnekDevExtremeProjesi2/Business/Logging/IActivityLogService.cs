@@ -1,10 +1,5 @@
-﻿using OrnekDevExtremeProjesi2.Models;
-using OrnekDevExtremeProjesi2.Models.DTOs;
-using System;
+﻿using OrnekDevExtremeProjesi2.Models.DTOs;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
 
 namespace OrnekDevExtremeProjesi2.Business.Logging
 {
@@ -12,5 +7,6 @@ namespace OrnekDevExtremeProjesi2.Business.Logging
     {
         void AddLog(int mainId, string action, string description, int userId);
         List<ActivityLogListDto> GetLogsByMainId(int mainId);
+        List<ActivityLogListDto> GetAllLogs();
     }
 }

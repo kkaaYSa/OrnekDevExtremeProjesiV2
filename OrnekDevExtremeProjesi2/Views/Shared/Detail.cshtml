@@ -1,0 +1,99 @@
+﻿@model OrnekDevExtremeProjesi2.Models.Main
+@using DevExtreme.AspNet.Mvc
+@using OrnekDevExtremeProjesi2.Models.DTOs
+
+<div class="detail-wrapper">
+    @(Html.DevExtreme().ScrollView()
+        .Width("100%")
+        .Height("100%")
+        .ShowScrollbar(ShowScrollbarMode.Always)
+        .Content(@<text>
+
+            <div class="mb-4">
+                <h4 style="font-weight:600; color:#1f2937;">Kayıt Bilgileri</h4>
+
+                @(Html.DevExtreme().Form<OrnekDevExtremeProjesi2.Models.Main>()
+                .ID("detailForm")
+                .FormData(Model)
+                .ColCount(2)
+                .LabelLocation(FormLabelLocation.Top)
+                .ReadOnly(true)
+                .Items(items =>
+                {
+                    items.AddSimpleFor(m => m.Id).Label(l => l.Text("ID"));
+                    items.AddSimple()
+        .Label(l => l.Text("Kategori"))
+        .Editor(e => e.TextBox()
+            .Value(ViewBag.CategoryName != null ? ViewBag.CategoryName.ToString() : "")
+            .ReadOnly(true)
+        );
+                    items.AddSimpleFor(m => m.Title).Label(l => l.Text("Başlık"));
+                    items.AddSimpleFor(m => m.IsActive).Label(l => l.Text("Durum"));
+
+                    items.AddSimpleFor(m => m.CreatedDate)
+                        .Label(l => l.Text("Oluşturulma Tarihi"))
+                        .Editor(e => e.DateBox()
+                            .DisplayFormat("dd.MM.yyyy HH:mm")
+                        );
+
+                    items.AddSimpleFor(m => m.Description)
+                        .Label(l => l.Text("Açıklama"))
+                        .ColSpan(2)
+                        .Editor(e => e.TextArea().Height(100));
+                })
+                )
+            </div>
+
+            <div>
+                <h4 style="font-weight:600; color:#1f2937;">Kayıt Logları</h4>
+
+                @(Html.DevExtreme().DataGrid<ActivityLogListDto>()
+                    .ID("detailLogsGrid")
+                    .ShowBorders(true)
+                    .RowAlternationEnabled(true)
+                    .ColumnAutoWidth(true)
+                    .Height(320)
+                    .Paging(p => p.PageSize(8))
+                    .Pager(p =>
+                    {
+                        p.Visible(true);
+                        p.ShowInfo(true);
+                        p.ShowPageSizeSelector(false);
+                    })
+                    .Columns(columns =>
+                    {
+                        columns.AddFor(m => m.Action)
+                            .Caption("İşlem")
+                            .Width(130);
+
+                        columns.AddFor(m => m.Description)
+                            .Caption("Açıklama");
+
+                        columns.AddFor(m => m.UserName)
+                            .Caption("Kullanıcı")
+                            .Width(140);
+
+                        columns.AddFor(m => m.LogDate)
+                            .Caption("Tarih")
+                            .DataType(GridColumnDataType.DateTime)
+                            .Format("dd.MM.yyyy HH:mm")
+                            .Width(160);
+                    })
+                )
+            </div>
+
+        </text>)
+    )
+</div>
+
+<script>
+    var DetailModule = DetailModule || {};
+
+    DetailModule.init = function (mainId) {
+        $("#detailLogsGrid").dxDataGrid("instance").option("dataSource", {
+            load: function () {
+                return $.getJSON("/Main/GetLogsByMainId", { id: mainId });
+            }
+        });
+    };
+</script>

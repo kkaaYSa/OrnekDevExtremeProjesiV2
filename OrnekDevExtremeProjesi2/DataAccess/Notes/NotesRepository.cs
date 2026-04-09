@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Data.Entity;
+using System.Collections.Generic;
 using System.Linq;
 using NoteEntity = global::OrnekDevExtremeProjesi2.Models.Notes;
 using OrnekDevExtremeProjesi2.Models;
@@ -15,9 +16,11 @@ namespace OrnekDevExtremeProjesi2.DataAccess.Notes
             _db = new AppDbContext();
         }
 
+
         public List<NoteListDto> GetByMainId(int mainId)
         {
             return _db.notes
+                .Include(x => x.RequestingUser)
                 .Where(x => x.MainId == mainId)
                 .OrderByDescending(x => x.CreatedDate)
                 .ToList()

@@ -44,9 +44,9 @@ namespace OrnekDevExtremeProjesi2.Controllers
                 Message = result.Message
             });
         }
-        //public ActionResult Profile() // İsim tam olarak böyle olmalı!
-        //{
-        //    return View(); // Burası "Views/Admin/SystemDetails.cshtml" dosyasına bakar.
-        //}
+        public ActionResult Profile() // İsim tam olarak böyle olmalı!
+        {
+            return View(); // Burası "Views/Admin/SystemDetails.cshtml" dosyasına bakar.
+        }
     }
 }

@@ -11,5 +11,6 @@ namespace OrnekDevExtremeProjesi2.DataAccess.Logging
         void AddLog(ActivityLog log);
     
     List<ActivityLogListDto> GetLogsByMainId(int mainId);
+        List<ActivityLogListDto> GetAllLogs();
     }
 }

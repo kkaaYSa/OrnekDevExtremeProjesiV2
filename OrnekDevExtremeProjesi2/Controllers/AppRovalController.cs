@@ -11,26 +11,37 @@ namespace OrnekDevExtremeProjesi2.Controllers
         {
             _approvalService = new ApprovalService();
         }
+
         public ActionResult Approvals()
         {
-            if (Session["Role"]?.ToString() != "Admin")
+            string currentRole = Session["Role"] != null ? Session["Role"].ToString() : "";
+
+            if (currentRole != "Admin")
                 return RedirectToAction("Index", "Main");
 
-            var data = _approvalService.GetPendingApprovals();
-            return View(data);
+            return View();
         }
-        public JsonResult GetPendingApprovals()
+
+        [HttpGet]
+        public ContentResult GetPendingApprovals()
         {
             var data = _approvalService.GetPendingApprovals();
-            return Json(data, JsonRequestBehavior.AllowGet);
+
+            return Content(
+                Newtonsoft.Json.JsonConvert.SerializeObject(data),
+                "application/json"
+            );
         }
+
         [HttpPost]
-        public JsonResult ActionRequest(int id, bool isApprove)
+        public JsonResult ActionRequest(int id, bool isApprove, string adminNote)
         {
             int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;
-            string currentUserName = Session["UserName"] != null ? Session["UserName"].ToString() : "Bilinmeyen Kullanıcı";
+            string currentUserName = Session["UserName"] != null
+                ? Session["UserName"].ToString()
+                : "Bilinmeyen Kullanıcı";
 
-            var result = _approvalService.ActionRequest(id, isApprove, currentUserId, currentUserName);
+            var result = _approvalService.ActionRequest(id, isApprove, adminNote, currentUserId, currentUserName);
 
             return Json(new
             {

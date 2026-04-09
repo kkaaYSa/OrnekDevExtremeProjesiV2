@@ -1,0 +1,184 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using OrnekDevExtremeProjesi2.Models.DTOs
+
+@{
+    ViewBag.Title = "Onay Talepleri";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .approval-btn-approve {
+        background: #28a745 !important;
+        color: #fff !important;
+        padding: 6px 12px !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+        margin-right: 6px !important;
+        display: inline-block !important;
+        border: 1px solid #28a745 !important;
+    }
+
+        .approval-btn-approve:hover {
+            background: #218838 !important;
+            color: #fff !important;
+        }
+
+    .approval-btn-reject {
+        background: #fff !important;
+        color: #dc3545 !important;
+        padding: 6px 12px !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+        border: 1px solid #dc3545 !important;
+    }
+
+        .approval-btn-reject:hover {
+            background: #dc3545 !important;
+            color: #fff !important;
+        }
+</style>
+<div class="container-fluid mt-4">
+    <div class="card-modern p-4">
+        <h3 class="mb-3" style="color: var(--accent-blue); font-weight: 600;">
+            <i class="dx-icon-todo"></i> Onay Bekleyen Talepler
+        </h3>
+
+        @(Html.DevExtreme().DataGrid<PendingApprovalDto>()
+    .ID("approvalGrid")
+    .DataSource(d => d.Mvc()
+        .Controller("Approval")
+        .LoadAction("GetPendingApprovals")
+        .Key("Id")
+    )
+    .ShowBorders(true)
+    .RowAlternationEnabled(true)
+    .ColumnAutoWidth(true)
+    .WordWrapEnabled(false)
+    .SearchPanel(sp => sp.Visible(true).Width(250).Placeholder("Ara..."))
+    .Paging(p => p.PageSize(10))
+    .Pager(p =>
+    {
+        p.Visible(true);
+        p.ShowPageSizeSelector(true);
+        p.AllowedPageSizes(new[] { 10, 20, 50 });
+        p.ShowInfo(true);
+    })
+    .Columns(columns =>
+    {
+        columns.AddFor(m => m.Id).Caption("Talep ID").Width(90);
+        columns.AddFor(m => m.MainId).Caption("Kayıt ID").Width(90);
+        columns.AddFor(m => m.TargetTitle).Caption("Başlık").MinWidth(140);
+        columns.AddFor(m => m.TargetDescription).Caption("Açıklama").MinWidth(180);
+        columns.AddFor(m => m.RequestedBy).Caption("Talep Eden").Width(140);
+        columns.AddFor(m => m.RequestDate)
+    .Caption("Talep Tarihi")
+    .DataType(GridColumnDataType.DateTime)
+    .Format("dd.MM.yyyy HH:mm");
+        columns.AddFor(m => m.Status).Caption("Durum").Width(110);
+
+        columns.Add()
+    .Type(GridCommandColumnType.Buttons)
+    .Caption("İşlemler")
+    .VisibleIndex(0)
+    .Fixed(true)
+    .Buttons(buttons =>
+    {
+        buttons.Add()
+            .Hint("Onayla")
+            .Text("Onayla")
+            .CssClass("approval-btn-approve")
+            .OnClick("approveRequestRow");
+
+        buttons.Add()
+            .Hint("Reddet")
+            .Text("Reddet")
+            .CssClass("approval-btn-reject")
+            .OnClick("rejectRequestRow");
+    });
+    })
+)
+    </div>
+</div>
+
+@(Html.DevExtreme().Popup()
+    .ID("rejectPopup")
+    .Title("Red Nedeni")
+    .Width(500)
+    .Height(320)
+    .ShowCloseButton(true)
+    .Visible(false)
+    .ContentTemplate(@<text>
+        <div class="p-2">
+            @(Html.DevExtreme().TextArea()
+                .ID("rejectNote")
+                .Height(140)
+                .Placeholder("Red nedenini girin...")
+            )
+
+            <div class="mt-3 d-flex" style="gap:10px;">
+                @(Html.DevExtreme().Button()
+                    .Text("Gönder")
+                    .Type(ButtonType.Danger)
+                    .OnClick("submitReject")
+                )
+
+                @(Html.DevExtreme().Button()
+                    .Text("Vazgeç")
+                    .StylingMode(ButtonStylingMode.Outlined)
+                    .OnClick("function(){ $('#rejectPopup').dxPopup('instance').hide(); }")
+                )
+            </div>
+        </div>
+    </text>)
+)
+
+@section scripts {
+    <script>
+    var selectedApprovalId = 0;
+
+    function approvalGridInstance() {
+        return $("#approvalGrid").dxDataGrid("instance");
+    }
+
+    function approveRequestRow(e) {
+        var id = e.row.data.Id;
+
+        DevExpress.ui.dialog.confirm("Bu talebi onaylamak istediğine emin misin?", "Onay")
+            .done(function (result) {
+                if (!result) return;
+
+                $.post('@Url.Action("ActionRequest", "Approval")', {
+                    id: id,
+                    isApprove: true
+                }, function (res) {
+                    DevExpress.ui.notify(res.message, res.success ? "success" : "error", 2500);
+                    if (res.success) {
+                        approvalGridInstance().refresh();
+                    }
+                });
+            });
+    }
+
+    function rejectRequestRow(e) {
+        selectedApprovalId = e.row.data.Id;
+        $("#rejectPopup").dxPopup("instance").show();
+    }
+
+    function submitReject() {
+    var note = $("#rejectNote").dxTextArea("instance").option("value");
+
+    $.post('@Url.Action("ActionRequest", "Approval")', {
+        id: selectedApprovalId,
+        isApprove: false,
+        adminNote: note
+    }, function (res) {
+        DevExpress.ui.notify(res.message, res.success ? "success" : "error", 2500);
+
+        if (res.success) {
+            $("#rejectPopup").dxPopup("instance").hide();
+            approvalGridInstance().refresh();
+        }
+    });
+}
+    </script>
+}

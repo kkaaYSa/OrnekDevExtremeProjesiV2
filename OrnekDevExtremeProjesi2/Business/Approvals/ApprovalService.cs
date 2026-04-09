@@ -22,7 +22,7 @@ namespace OrnekDevExtremeProjesi2.Business.Approvals
         {
             return _approvalRepository.GetPendingApprovals();
         }
-        public ApprovalActionResultDto ActionRequest(int approvalId, bool isApprove, int actionUserId, string actionUserName)
+        public ApprovalActionResultDto ActionRequest(int approvalId, bool isApprove, string adminNote, int actionUserId, string actionUserName)
         {
             var request = _approvalRepository.GetApprovalWithMain(approvalId);
             string islemTuru = "";
@@ -36,6 +36,9 @@ namespace OrnekDevExtremeProjesi2.Business.Approvals
                     Message = "Onay kaydı bulunamadı."
                 };
             }
+
+            request.AdminNote = string.IsNullOrWhiteSpace(adminNote) ? null : adminNote.Trim();
+
             if (isApprove)
             {
                 var main = _approvalRepository.GetMainById(request.MainId);
@@ -52,24 +55,23 @@ namespace OrnekDevExtremeProjesi2.Business.Approvals
                 _approvalRepository.DeleteMain(main);
                 request.Status = "Onaylandı";
                 islemTuru = "Silme Onayı";
-                mesaj = $"Admin ({actionUserName}) silme talebini onayladı. Kayıt uçuruldu.";
+                mesaj = string.Format("Admin ({0}) silme talebini onayladı. Kayıt uçuruldu.", actionUserName);
             }
             else
             {
                 request.Status = "Reddedildi";
                 islemTuru = "Silme Reddi";
-                mesaj = $"Admin ({actionUserName}) silme talebini reddetti.";
-
+                mesaj = string.Format("Admin ({0}) silme talebini reddetti.", actionUserName);
             }
+
             _activityLogService.AddLog(request.MainId, islemTuru, mesaj, actionUserId);
             _approvalRepository.Save();
+
             return new ApprovalActionResultDto
             {
                 Success = true,
                 Message = isApprove ? "Talep onaylandı." : "Talep reddedildi."
             };
-
-
         }
 
     }

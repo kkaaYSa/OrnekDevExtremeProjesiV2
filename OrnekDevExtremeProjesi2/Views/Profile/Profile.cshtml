@@ -1,0 +1,135 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using OrnekDevExtremeProjesi2.Models.DTOs
+
+@{
+    ViewBag.Title = "Profil";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card-modern p-4">
+        <h3 class="mb-4" style="color: var(--accent-blue); font-weight: 600;">
+            <i class="dx-icon-user"></i> Profil Bilgileri
+        </h3>
+
+        @(Html.DevExtreme().LoadPanel()
+            .ID("profileLoadPanel")
+            .Visible(false)
+            .ShowIndicator(true)
+            .ShowPane(true)
+            .Shading(true)
+            .HideOnOutsideClick(false)
+            .Message("Yükleniyor...")
+        )
+        @(Html.DevExtreme().Form<ProfileDataDto>()
+            .ID("profileForm")
+            .ColCount(2)
+            .LabelLocation(FormLabelLocation.Top)
+            .FormData(new ProfileDataDto())
+            .Items(items =>
+            {
+                items.AddSimpleFor(m => m.Id)
+                    .Label(l => l.Text("Kullanıcı ID"))
+                    .Editor(e => e.NumberBox().ReadOnly(true));
+
+                items.AddSimpleFor(m => m.UsersRole)
+                    .Label(l => l.Text("Rol"))
+                    .Editor(e => e.TextBox().ReadOnly(true));
+
+                items.AddSimpleFor(m => m.UserName)
+                    .Label(l => l.Text("Kullanıcı Adı"))
+                    .Editor(e => e.TextBox()
+                        .ID("profileUserName")
+                        .Placeholder("Kullanıcı adı")
+                    );
+
+                items.AddSimple()
+                    .Name("OldPassword")
+                    .Label(l => l.Text("Mevcut Şifre"))
+                    .Editor(e => e.TextBox()
+                        .ID("profileOldPassword")
+                        .Mode(TextBoxMode.Password)
+                        .Placeholder("Mevcut şifrenizi girin")
+                    );
+
+                items.AddSimple()
+                    .Name("NewPassword")
+                    .Label(l => l.Text("Yeni Şifre"))
+                    .Editor(e => e.TextBox()
+                        .ID("profileNewPassword")
+                        .Mode(TextBoxMode.Password)
+                        .Placeholder("Yeni şifre (zorunlu değil)")
+                    );
+            })
+        )
+
+        <div class="mt-4">
+            @(Html.DevExtreme().Button()
+                .ID("saveProfileBtn")
+                .Text("Profili Güncelle")
+                .Type(ButtonType.Success)
+                .StylingMode(ButtonStylingMode.Contained)
+                .OnClick("saveProfile")
+            )
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+    $(function () {
+        loadProfileData();
+    });
+
+    function profileFormInstance() {
+        return $("#profileForm").dxForm("instance");
+    }
+
+    function loadPanelInstance() {
+        return $("#profileLoadPanel").dxLoadPanel("instance");
+    }
+
+    function loadProfileData() {
+        loadPanelInstance().show();
+
+        $.get("/Profile/GetProfileData", function (res) {
+            if (res && res.success) {
+                profileFormInstance().option("formData", res.data);
+            } else {
+                DevExpress.ui.notify(res.message || "Profil bilgileri yüklenemedi.", "error", 2500);
+            }
+        }).fail(function () {
+            DevExpress.ui.notify("Profil bilgileri alınırken hata oluştu.", "error", 2500);
+        }).always(function () {
+            loadPanelInstance().hide();
+        });
+    }
+
+    function saveProfile() {
+        var formData = profileFormInstance().option("formData");
+
+        var payload = {
+            id: formData.Id,
+            userName: formData.UserName,
+            oldPassword: $("#profileOldPassword").dxTextBox("instance").option("value"),
+            newPassword: $("#profileNewPassword").dxTextBox("instance").option("value")
+        };
+
+        loadPanelInstance().show();
+
+        $.post("/Profile/UpdateProfile", payload, function (res) {
+            DevExpress.ui.notify(res.Message || res.message, res.Success || res.success ? "success" : "error", 2500);
+
+            if (res.Success || res.success) {
+                $("#profileOldPassword").dxTextBox("instance").option("value", "");
+                $("#profileNewPassword").dxTextBox("instance").option("value", "");
+                loadProfileData();
+            }
+        }).fail(function () {
+            DevExpress.ui.notify("Profil güncellenirken hata oluştu.", "error", 2500);
+        }).always(function () {
+            loadPanelInstance().hide();
+        });
+    }
+    </script>
+}

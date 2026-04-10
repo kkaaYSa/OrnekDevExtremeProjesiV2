@@ -20,6 +20,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult AddNote(int mainId, string noteText)
         {
             if (Session["UserId"] == null)
@@ -42,6 +43,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult DeleteNote(int id)
         {
             if (Session["UserId"] == null)

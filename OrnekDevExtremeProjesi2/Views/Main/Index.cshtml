@@ -159,7 +159,8 @@
 
         $.post("/Notes/AddNote", {
             mainId: mainId,
-            noteText: noteText
+            noteText: noteText,
+            __RequestVerificationToken: getAntiForgeryToken()
         }, function (res) {
             DevExpress.ui.notify(res.message, res.success ? "success" : "error", 2500);
 
@@ -178,7 +179,7 @@
             .done(function (result) {
                 if (!result) return;
 
-                $.post("/Notes/DeleteNote", { id: noteId }, function (res) {
+                $.post("/Notes/DeleteNote", { id: noteId, __RequestVerificationToken: getAntiForgeryToken() }, function (res) {
                     DevExpress.ui.notify(res.message, res.success ? "success" : "error", 2500);
 
                     if (res.success) {
@@ -241,6 +242,12 @@
                 DevExpress.ui.notify(msg, "error", 5000);
             });
         });
+    }
+    function addAntiForgeryToken(method, ajaxOptions) {
+        if (method === "insert" || method === "update" || method === "delete") {
+            ajaxOptions.data = ajaxOptions.data || {};
+            ajaxOptions.data.__RequestVerificationToken = getAntiForgeryToken();
+        }
     }
 
 
@@ -422,6 +429,7 @@
                 .DeleteAction("DeleteMain")
 
                 .Key("Id")
+                .OnBeforeSend("addAntiForgeryToken")
 
             )
 
@@ -452,6 +460,7 @@
                 columns.AddFor(m => m.Title).Caption("Başlık");
 
                 columns.AddFor(m => m.Description).Caption("Açıklama");
+                columns.AddFor(m => m.CreatedDate).Caption("Oluşturulma Tarihi").DataType(GridColumnDataType.Date).Format("dd/MM/yyyy HH:mm").Width(150);
 
                 columns.AddFor(m => m.IsActive).Caption("Durum").Width(100)
 

@@ -34,6 +34,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult ActionRequest(int id, bool isApprove, string adminNote)
         {
             int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 1;

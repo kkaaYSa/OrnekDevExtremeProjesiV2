@@ -49,30 +49,21 @@ namespace OrnekDevExtremeProjesi2.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
+        
         [HttpGet]
-        //[ValidateAntiForgeryToken]
-        public ActionResult GetMainList()
+        public ContentResult GetMainList()
         {
-            try
-            {
-                int currentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 0;
-                string currentRole = Session["Role"] != null ? Session["Role"].ToString() : "";
+            int CurrentUserId = Session["UserId"] != null ? (int)Session["UserId"] : 0;
+            string CurrentRole = Session["Role"] != null ? Session["Role"].ToString() : "";
+            var data = _mainService.GetMainList(CurrentUserId, CurrentRole);
 
-                var data = _mainService.GetMainList(currentUserId, currentRole);
-
-                return Json(data, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = "Liste çekilirken hata oluştu.",
-                    error = ex.Message
-                }, JsonRequestBehavior.AllowGet);
-            }
+            return Content(
+                Newtonsoft.Json.JsonConvert.SerializeObject(data),
+                "application/json"
+            );
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult CreateMain(string values)
         {
             try

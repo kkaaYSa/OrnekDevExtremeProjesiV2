@@ -23,6 +23,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
             return Json(new { success = true, data = user }, JsonRequestBehavior.AllowGet);
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult UpdateProfile(int id, string userName, string oldPassword, string newPassword)
         {
             var sessionUser = Session["UserId"];
@@ -44,9 +45,10 @@ namespace OrnekDevExtremeProjesi2.Controllers
                 Message = result.Message
             });
         }
-        public ActionResult Profile() // İsim tam olarak böyle olmalı!
+        
+        public ActionResult Index() // İsim tam olarak böyle olmalı!
         {
-            return View(); // Burası "Views/Admin/SystemDetails.cshtml" dosyasına bakar.
+            return View("Profile"); // Burası "Views/Admin/SystemDetails.cshtml" dosyasına bakar.
         }
     }
 }

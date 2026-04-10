@@ -21,7 +21,9 @@
                 }
 
                 @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+
                 {
+                    @Html.AntiForgeryToken()
                     @(Html.DevExtreme().Form()
                         .ID("loginForm")
                         .ColCount(1)

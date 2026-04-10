@@ -376,12 +376,10 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\AppRovalController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LogsController.cs" />
     <Compile Include="Controllers\MainController.cs" />
     <Compile Include="Controllers\NotesController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
-    <Compile Include="Controllers\SampleDataController.cs" />
     <Compile Include="DataAccess\Account\AccountRepository.cs" />
     <Compile Include="DataAccess\Account\IAccountRepository.cs" />
     <Compile Include="DataAccess\Approvals\ApprovalRepository.cs" />
@@ -422,8 +420,6 @@
     <Compile Include="Models\DTOs\UpdateProfileResultDto.cs" />
     <Compile Include="Models\Main.cs" />
     <Compile Include="Models\Notes.cs" />
-    <Compile Include="Models\SampleData.cs" />
-    <Compile Include="Models\SampleOrder.cs" />
     <Compile Include="Models\Users.cs" />
     <Compile Include="Models\UsersRole.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

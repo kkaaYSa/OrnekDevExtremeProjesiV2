@@ -22,6 +22,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
 
         // LOGIN POST
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Login(string username, string password)
         {
             var user = _accountService.Login(username, password);
@@ -47,6 +48,7 @@ namespace OrnekDevExtremeProjesi2.Controllers
 
         // REGISTER POST
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Register(Users user)
         {
             var result = _accountService.Register(user);

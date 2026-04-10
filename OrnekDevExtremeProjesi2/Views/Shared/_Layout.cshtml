@@ -66,7 +66,7 @@
     </style>
 </head>
 <body>
-    
+    @Html.AntiForgeryToken()
 
     @(Html.DevExtreme().Drawer()
         .ID("appDrawer")
@@ -110,7 +110,7 @@
             items.Add()
                 .Text("Profil")
                 .Icon("user")
-                .Option("url", Url.Action("Profile", "Profile"));
+                .Option("url", Url.Action("Index", "Profile"));
 
             items.Add()
                 .Text("Çıkış Yap")
@@ -144,16 +144,18 @@
         </text>)
     )
 
-    <script>
-
-        function onSideMenuItemClick(e) {
-            var url = e.itemData.url;
-            if (url) {
-                window.location.href = url;
-            }
+<script>
+    
+    function onSideMenuItemClick(e) {
+        var url = e.itemData.url;
+        if (url) {
+            window.location.href = url;
         }
-
-    </script>
+    }
+    function getAntiForgeryToken() {
+        return $('input[name="__RequestVerificationToken"]').val();
+    }
+</script>
 
     @RenderSection("scripts", required: false)
 </body>

@@ -42,7 +42,7 @@
         <h3 class="mb-3" style="color: var(--accent-blue); font-weight: 600;">
             <i class="dx-icon-todo"></i> Onay Bekleyen Talepler
         </h3>
-
+        @Html.AntiForgeryToken()
         @(Html.DevExtreme().DataGrid<PendingApprovalDto>()
     .ID("approvalGrid")
     .DataSource(d => d.Mvc()
@@ -149,7 +149,8 @@
 
                 $.post('@Url.Action("ActionRequest", "Approval")', {
                     id: id,
-                    isApprove: true
+                    isApprove: true,
+                    __RequestVerificationToken: getAntiForgeryToken()
                 }, function (res) {
                     DevExpress.ui.notify(res.message, res.success ? "success" : "error", 2500);
                     if (res.success) {
@@ -170,6 +171,7 @@
     $.post('@Url.Action("ActionRequest", "Approval")', {
         id: selectedApprovalId,
         isApprove: false,
+        __RequestVerificationToken: getAntiForgeryToken(),
         adminNote: note
     }, function (res) {
         DevExpress.ui.notify(res.message, res.success ? "success" : "error", 2500);

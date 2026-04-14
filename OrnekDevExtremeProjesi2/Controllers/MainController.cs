@@ -1,4 +1,6 @@
-﻿using OrnekDevExtremeProjesi2.Business.Categories;
+﻿using DevExtreme.AspNet.Data;
+using DevExtreme.AspNet.Mvc;
+using OrnekDevExtremeProjesi2.Business.Categories;
 using OrnekDevExtremeProjesi2.Business.Logging;
 using OrnekDevExtremeProjesi2.Business.Mains;
 using OrnekDevExtremeProjesi2.Models;
@@ -27,6 +29,8 @@ namespace OrnekDevExtremeProjesi2.Controllers
         public ActionResult Index()
         {
             ViewBag.Categories = _categoryService.GetAllCategories();
+            //TempData 
+              //ViewData  
             return View();
         }
 
@@ -185,10 +189,11 @@ namespace OrnekDevExtremeProjesi2.Controllers
                 return Json(new { success = false, message = "veri çekilirken hata oluştu", error = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-        public JsonResult GetCategoryList()
+        public JsonResult GetCategoryList(DataSourceLoadOptions loadOptions)
         {
             var categories = _categoryService.GetAllCategories();
-            return Json(categories, JsonRequestBehavior.AllowGet);
+            var result = DataSourceLoader.Load(categories, loadOptions);
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
         public ActionResult Details(int id)
         {

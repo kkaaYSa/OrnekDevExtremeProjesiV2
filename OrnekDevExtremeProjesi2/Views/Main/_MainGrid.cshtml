@@ -1,0 +1,77 @@
+﻿@using OrnekDevExtremeProjesi2.Models.DTOs
+@using DevExtreme.AspNet.Mvc
+
+@(Html.DevExtreme().DataGrid<MainListDto>()
+    .ID("mainGrid")
+    .DataSource(d => d.Mvc()
+        .Controller("Main")
+        .LoadAction("GetMainList")
+        .InsertAction("CreateMain")
+        .UpdateAction("UpdateMain")
+        .DeleteAction("DeleteMain")
+        .Key("Id")
+        .OnBeforeSend("addAntiForgeryToken")
+    )
+    .ShowBorders(true)
+    .SearchPanel(sp => sp.Visible(true).Width(240).Placeholder("Ara..."))
+    .FilterRow(fr => fr.Visible(true))
+    .Columns(columns =>
+    {
+        columns.Add()
+            .Caption("Durum")
+            .Width(110)
+            .Alignment(HorizontalAlignment.Center)
+            .CellTemplate(new JS("statusIconsTemplate"));
+
+        columns.AddFor(m => m.Id).Width(80).Caption("ID").Visible(true);
+
+        columns.AddFor(m => m.CategoryId).Caption("Kategori")
+            .Lookup(lookup => lookup
+                .DataSource(d => d.Mvc().Controller("Main").LoadAction("GetCategoryList").Key("Id"))
+                .DisplayExpr("Name")
+                .ValueExpr("Id")
+            );
+
+        columns.AddFor(m => m.Title).Caption("Başlık");
+        columns.AddFor(m => m.Description).Caption("Açıklama");
+
+        columns.AddFor(m => m.CreatedDate)
+            .Caption("Oluşturulma Tarihi")
+            .DataType(GridColumnDataType.Date)
+            .Format("dd/MM/yyyy HH:mm")
+            .Width(150);
+
+        columns.AddFor(m => m.IsActive)
+            .Caption("Durum")
+            .Width(100)
+            .CellTemplate(@<text>
+                <span class="badge <%= value ? "badge-success" : "badge-danger" %>"
+                      style="color: <%= value ? "#28a745" : "#dc3545" %>; font-weight: bold;">
+                    <%= value ? "Aktif" : "Pasif" %>
+                </span>
+            </text>);
+
+        columns.Add().Type(GridCommandColumnType.Buttons).Visible(false);
+    })
+    .Editing(e => e.Mode(GridEditMode.Popup)
+        .AllowUpdating(true)
+        .AllowAdding(true)
+        .AllowDeleting(true)
+        .ConfirmDelete(false)
+        .Popup(p => p.Title("Kayıt Formu").Width(500).Height(450))
+        .Form(f => f.Items(items =>
+        {
+            items.AddSimpleFor(m => m.Title);
+
+            items.AddSimpleFor(m => m.CategoryId)
+                .Label(l => l.Text("Kategori"));
+
+            items.AddSimpleFor(m => m.Description)
+                .Editor(ed => ed.TextArea().Height(80));
+
+            items.AddSimpleFor(m => m.IsActive)
+                .Editor(ed => ed.Switch());
+        }))
+    )
+    .OnContextMenuPreparing("onMainGridContextMenu")
+)

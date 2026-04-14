@@ -1,0 +1,67 @@
+﻿.status-icons-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100%;
+}
+
+.status-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+    .status-badge i {
+        font-size: 16px;
+    }
+
+.status-note {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.status-waiting {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.status-rejected {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.status-badge:hover {
+    transform: scale(1.08);
+}
+
+.badge {
+    text-decoration: none !important;
+    border-bottom: none !important;
+    display: inline-block;
+    padding: 0.4em 0.6em;
+}
+
+.notesGridDeleteBtn {
+    background: #dc3545 !important;
+    color: #fff !important;
+    border: 1px solid #dc3545 !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    font-weight: 500;
+}
+
+    .notesGridDeleteBtn:hover {
+        background: #bb2d3b !important;
+        color: #fff !important;
+        text-decoration: none !important;
+    }
+.notes-action {
+    margin-bottom: 15px;
+}

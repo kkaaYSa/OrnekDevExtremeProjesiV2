@@ -1,0 +1,73 @@
+﻿@using OrnekDevExtremeProjesi2.Models.DTOs
+@using DevExtreme.AspNet.Mvc
+
+@(Html.DevExtreme().Popup()
+    .ID("notesPopup")
+    .Title("Notlar")
+    .Width(900)
+    .Height(650)
+    .Visible(false)
+    .ShowCloseButton(true)
+    .DragEnabled(true)
+    .ContentTemplate(@<text>
+
+        @(Html.DevExtreme().Form()
+            .ID("noteForm")
+            .ColCount(1)
+            .Items(items =>
+            {
+                items.AddSimple()
+                    .Name("NoteText")
+                    .Label(l => l.Text("Not"))
+                    .Editor(e => e.TextArea()
+                        .ID("noteTextArea")
+                        .Height(100)
+                        .Placeholder("Notunuzu yazın...")
+                    );
+            })
+        )
+
+        <div class="notes-action">
+            @(Html.DevExtreme().Button()
+                .Text("Not Ekle")
+                .Type(ButtonType.Success)
+                .StylingMode(ButtonStylingMode.Contained)
+                .OnClick("saveNote")
+            )
+        </div>
+
+        @(Html.DevExtreme().DataGrid<NoteListDto>()
+            .ID("notesGrid")
+            .ShowBorders(true)
+            .RowAlternationEnabled(true)
+            .ColumnAutoWidth(true)
+            .Height(350)
+            .Paging(p => p.PageSize(8))
+            .Pager(p =>
+            {
+                p.Visible(true);
+                p.ShowInfo(true);
+            })
+            .Columns(columns =>
+            {
+                columns.AddFor(m => m.UserName).Caption("Kullanıcı").Width(140);
+                columns.AddFor(m => m.NoteText).Caption("Not");
+                columns.AddFor(m => m.CreatedDate).Caption("Tarih").Width(150);
+
+                columns.Add()
+                    .Type(GridCommandColumnType.Buttons)
+                    .Caption("İşlem")
+                    .Width(100)
+                    .Buttons(buttons =>
+                    {
+                        buttons.Add()
+                            .Text("Sil")
+                            .Hint("Sil")
+                            .CssClass("notesGridDeleteBtn")
+                            .OnClick("deleteNoteRow");
+                    });
+            })
+        )
+
+    </text>)
+)

@@ -1,4 +1,5 @@
 ﻿using System.Web.Mvc;
+using System.Web.Helpers;
 using System.Web.Security;
 using OrnekDevExtremeProjesi2.Business.Account;
 using OrnekDevExtremeProjesi2.Models;
@@ -14,9 +15,35 @@ namespace OrnekDevExtremeProjesi2.Controllers
             _accountService = new AccountService();
         }
 
+        protected override void OnException(ExceptionContext filterContext)
+        {
+            if (filterContext.Exception is HttpAntiForgeryException)
+            {
+                var cookieName = AntiForgeryConfig.CookieName ?? "__RequestVerificationToken";
+
+                if (Request.Cookies[cookieName] != null)
+                {
+                    Response.Cookies.Add(new System.Web.HttpCookie(cookieName)
+                    {
+                        Expires = System.DateTime.Now.AddDays(-1)
+                    });
+                }
+
+                TempData["Error"] = "Oturum doğrulaması yenilendi. Lütfen tekrar deneyin.";
+                filterContext.ExceptionHandled = true;
+                filterContext.Result = RedirectToAction("Login");
+                return;
+            }
+
+            base.OnException(filterContext);
+        }
+
         // LOGIN SAYFASI
         public ActionResult Login()
         {
+            if (TempData["Error"] != null)
+                ViewBag.Error = TempData["Error"];
+
             return View();
         }
 

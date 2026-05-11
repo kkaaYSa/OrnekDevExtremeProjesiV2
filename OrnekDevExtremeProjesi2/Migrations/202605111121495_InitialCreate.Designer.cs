@@ -7,13 +7,13 @@ namespace OrnekDevExtremeProjesi2.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.5.1")]
-    public sealed partial class DegisiklikAdi : IMigrationMetadata
+    public sealed partial class InitialCreate : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(DegisiklikAdi));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(InitialCreate));
         
         string IMigrationMetadata.Id
         {
-            get { return "202604070654009_DegisiklikAdi"; }
+            get { return "202605111121495_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

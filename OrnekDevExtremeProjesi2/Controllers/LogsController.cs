@@ -23,8 +23,13 @@ namespace OrnekDevExtremeProjesi2.Controllers
         }
 
         [HttpGet]
-        public ContentResult GetLogs()
+        public ActionResult GetLogs()
         {
+            string currentRole = Session["Role"] != null ? Session["Role"].ToString() : "";
+
+            if (currentRole != "Admin")
+                return new HttpStatusCodeResult(403);
+
             var data = _logService.GetAllLogs();
 
             return Content(

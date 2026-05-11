@@ -30,9 +30,11 @@ namespace OrnekDevExtremeProjesi2.DataAccess.Logging
                 .Select(x => new ActivityLogListDto
                 {
                     Id = x.Id,
+                    MainId = x.MainId,
                     Action = x.Action,
                     Description = x.Description,
                     LogDate = x.LogDate,
+                    UsersId = x.UsersId,
                     UserName = x.RequestingUser != null ? x.RequestingUser.UserName : "Bilinmeyen"
                 })
                 .ToList();
@@ -46,9 +48,11 @@ namespace OrnekDevExtremeProjesi2.DataAccess.Logging
                 .Select(x => new ActivityLogListDto
                 {
                     Id = x.Id,
+                    MainId = x.MainId,
                     Action = x.Action,
                     Description = x.Description,
                     LogDate = x.LogDate,
+                    UsersId = x.UsersId,
                     UserName = x.RequestingUser != null ? x.RequestingUser.UserName : "Bilinmeyen"
                 })
                 .ToList();
